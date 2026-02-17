@@ -1,35 +1,27 @@
-import { refs } from './refs.js';
-import { loadingBreeds, loading } from './loading.js';
+import axios from 'axios';
 
-const API__KEY =
-  'live_f2356JP8DpVVloGTYr5G4eYYEvtDUgEP9TCI2GpgqBZH1pda7IaydqbQr0VD9e9a';
-const BASE__URL = 'https://api.thecatapi.com/v1';
+const API_KEY =
+  'live_isqFIOupRMSeIKrkgs9v6n9AunTy2UZV2EeKEwSeo9aoab0YPD2RGLn1oIb09pCS';
 
-const option = {
+const BASE_URL = 'https://api.thecatapi.com/v1';
+
+const api = axios.create({
+  baseURL: BASE_URL,
   headers: {
-    'x-api-key': API__KEY,
+    'x-api-key': API_KEY,
   },
-};
+});
 
 export function fetchBreeds() {
-  loadingBreeds();
-  return fetch(`${BASE__URL}/breeds`, option).then(res => {
-    if (!res.ok) {
-      throw new Error();
-    }
-    return res.json();
-  });
+  return api.get('/breeds').then(response => response.data);
 }
 
 export function fetchCatByBreed(breedId) {
-  refs.infoConteiner.classList.add('is-hidden');
-  loading();
-  return fetch(`${BASE__URL}/images/search?breed_ids=${breedId}`, option).then(
-    res => {
-      if (!res.ok) {
-        throw new Error();
-      }
-      return res.json();
-    }
-  );
+  return api
+    .get('/images/search', {
+      params: {
+        breed_ids: breedId,
+      },
+    })
+    .then(response => response.data);
 }

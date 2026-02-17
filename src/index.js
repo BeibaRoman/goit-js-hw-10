@@ -1,16 +1,37 @@
-import './css/styles.css';
 import { refs } from './js/refs.js';
-import { populateSelect } from './js/populate.js';
-import { fetchBreeds } from './js/cat-api.js';
-import { loadedBreeds, loadError } from './js/loading.js';
-import { selectOption } from './js/selectOption.js';
-const DEBOUNCE_DELAY = 300;
+import { fetchBreeds, fetchCatByBreed } from './js/cat-api.js';
+import { populateSelect, populateSelectOption } from './js/populate.js';
+import { Loader } from './js/loader.js';
+import { showError } from './js/handleError.js';
+import { hide, show } from './js/select-visibility.js';
 
-refs.serchInput.addEventListener('change', selectOption);
+const loadMore = new Loader(refs.loaderNotify);
+
+hide(refs.selectBreed);
+hide(refs.containerInfo);
+loadMore.showLoading();
+
+refs.selectBreed.addEventListener('change', e => {
+  hide(refs.containerInfo);
+  loadMore.showLoading();
+
+  fetchCatByBreed(e.target.value)
+    .then(breeds => {
+      show(refs.containerInfo);
+      populateSelectOption(breeds, refs.containerInfo);
+    })
+    .catch(error => {
+      showError(`Не вдалося завантажити дані: ${error?.message}`);
+    })
+    .finally(() => loadMore.hideLoading());
+});
 
 fetchBreeds()
-  .then(res => {
-    loadedBreeds();
-    populateSelect(res);
+  .then(breeds => {
+    show(refs.selectBreed);
+    populateSelect(breeds, refs.selectBreed);
   })
-  .catch(loadError);
+  .catch(error => {
+    showError(`Не вдалося завантажити дані: ${error?.message}`);
+  })
+  .finally(() => loadMore.hideLoading());
